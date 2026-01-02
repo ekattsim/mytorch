@@ -25,7 +25,7 @@ class Linear:
 
         # compute batch gradients
         self.dLdW = dLdZ.T @ self.A
-        self.dLdb = dLdZ.T @ np.ones(self.N)
+        self.dLdb = dLdZ.T @ np.ones((self.N, 1))
 
         # propogate the derivative
         dLdA = dLdZ @ self.W
