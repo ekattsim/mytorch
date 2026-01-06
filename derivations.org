@@ -1,0 +1,198 @@
+#+title: Derivations
+
+* Backpropogation Formulas
+
+** Affine Layer
+
+So we're given \( \nabla_{Z}L \), and we have to find \( \nabla_{A}L,~\nabla_{W}L, ~\text{and} ~\nabla_{b}L.  \)
+
+The affine function is computed this way:
+
+\begin{equation}
+Z=AW^{T}+1_Nb^{T}
+\end{equation}
+
+The key equation is going to be:
+
+\begin{equation}
+\label{eq:12}
+dL= \mathrm{tr}((\nabla_{Z}L)^{T}dZ)
+\end{equation}
+
+Let's find the differential of the affine function
+
+\begin{align*}
+dZ&=d(AW^{T})+1_{N}d(b^{T})\\
+dZ&=A(dW)^{T}+dAW^{T}+1_{N}(db)^{T}
+\end{align*}
+
+Substitute
+
+\begin{align*}
+dL&= \mathrm{tr}((\nabla_{Z}L)^{T}\left( A(dW)^{T}+dAW^{T}+1_{N}(db)^{T} \right))
+\end{align*}
+
+Use the linearity of trace to separate the differentials:
+
+\begin{equation}
+\label{eq:13}
+dL= \underbrace{\mathrm{tr}((\nabla_{Z}L)^{T}A(dW)^{T})}_{\text{w.r.t}~W} + \underbrace{\mathrm{tr}((\nabla_{Z}L)^{T}dAW^{T})}_{\text{w.r.t.}~A}+ \underbrace{\mathrm{tr}((\nabla_{Z}L)^{T}1_{N}(db)^{T})}_{\text{w.r.t.}~b}
+\end{equation}
+
+Finally, arrange each term in the form of \( \mathrm{tr}((\nabla_{x}L)^{T}dx) \) using the trace properties \( \mathrm{tr}(XYZ)= \mathrm{tr}(ZXY) \) and \( \mathrm{tr}(X)= \mathrm{tr}(X^{T}) \).
+
+\begin{align*}
+dL(W)&=\mathrm{tr}((\nabla_{Z}L)^{T}A(dW)^{T})\\
+&= \mathrm{tr}(((\nabla_{Z}L)^{T}A(dW)^{T})^{T})\\\
+&= \mathrm{tr}(dWA^{T}\nabla_{Z}L)\\
+&= \mathrm{tr}((A^{T}\nabla_{Z}L)dW)\\
+dL(W)&= \mathrm{tr}(((\nabla_{Z}L)^{T}A)^{T}dW)
+\end{align*}
+
+\begin{equation}
+\label{eq:14}
+\fbox{\(  \nabla_{W}L=(\nabla_{Z}L)^{T}A\) }
+\end{equation}
+
+\begin{align*}
+dL(A)&= \mathrm{tr}((\nabla_{Z}L)^{T}dAW^{T})\\
+&= \mathrm{tr}((W^{T}(\nabla_{Z}L)^{T})dA)\\
+dL(A)&= \mathrm{tr}(((\nabla_{Z}L)W)^{T}dA)
+\end{align*}
+
+\begin{equation}
+\label{eq:15}
+\fbox{\( \nabla_{A}L=(\nabla_{Z}L)W \) }
+\end{equation}
+
+\begin{align*}
+dL(b)&= \mathrm{tr}((\nabla_{Z}L)^{T}1_{N}(db)^{T})\\
+&= \mathrm{tr}(((\nabla_{Z}L)^{T}1_{N}(db)^{T})^{T})\\
+&= \text{tr}(db(1_{N})^{T}\nabla_{Z}L)\\
+&= \text{tr}(((1_{N})^{T}\nabla_{Z}L)db)\\
+dL(b)&= \text{tr}(((\nabla_{Z}L)^{T}1_{N})^{T}db)
+\end{align*}
+
+\begin{equation}
+\label{eq:16}
+\fbox{\( \nabla_{b}L=(\nabla_{Z}L)^{T}1_{N} \) }
+\end{equation}
+
+** Activation
+
+*** Scalar Activations
+
+Forward:
+
+\begin{equation}
+A_{ij}= \sigma(Z_{ij})
+\end{equation}
+
+How about \( \nabla_{Z}L \), given \( \nabla_{A}L \)?
+
+\begin{align*}
+dL&= \mathrm{tr}((\nabla_{A}L)^{T}dA)
+\end{align*}
+
+Gotta find \( dA \)
+
+\begin{align*}
+dA_{ij}&= \sigma'(Z_{ij})dZ_{ij}\\
+dA&= \nabla_{Z}A \circ dZ
+\end{align*}
+
+where \( (\nabla_{Z}A)_{ij}=\sigma'(Z_{ij}) \)
+
+Okay now let's see,
+
+\begin{align*}
+dL&= \mathrm{tr}((\nabla_{A}L)^{T}\nabla_{Z}A\circ dZ)\\
+dL&= \mathrm{tr}((\nabla_{A}L\circ \nabla_{Z}A)^{T}dZ) \tag{\( \mathrm{tr}(X^{T}(Y\circ Z))= \mathrm{tr}((X\circ Y)^{T}Z) \) }
+\end{align*}
+
+Man, we're so lucky!
+
+\begin{equation}
+\fbox{\( \nabla_{Z}L=\nabla_{A}L\circ \nabla_{Z}A \) }
+\end{equation}
+
+**** Sigmoid
+
+\begin{align*}
+\sigma(z)&= \frac{1}{1+e^{-z}}\\
+\sigma'(z)&= \frac{\mathrm{d}}{\mathrm{d}z}(1+e^{-z})^{-1}\\
+&=-(1+e^{-z})^{-2}\frac{\mathrm{d}}{\mathrm{d}z}(e^{z})^{-1}\\
+&=(1+e^{-z})^{-2}e^{-2z}e^{z}\\
+&= \frac{e^{z}}{(1+e^{-z})^2e^{2z}}\\
+&= \frac{e^{-z}}{(1+e^{-z})^2}\\
+&= \frac{1}{(1+e^{-z})}\cdot \frac{e^{-z}}{(1+e^{-z})}\\
+&=\sigma(z)\cdot (1-\sigma(z))
+\end{align*}
+
+**** Tanh
+
+***** Forward
+
+\begin{equation}
+\label{eq:1}
+\tanh(z)= \frac{e^{z}-e^{-z}}{e^{z}+e^{-z}}
+\end{equation}
+
+***** Backward
+
+\begin{align*}
+\frac{\mathrm{d}}{\mathrm{d}z} \tanh(z)&= \frac{(e^{z}-e^{-z})'(e^{z}+e^{-z})-(e^{z}-e^{-z})(e^{z}+e^{-z})'}{(e^{z}+e^{-z})^2}\\
+&= \frac{(e^{z}+e^{-z})^2-(e^{z}-e^{-z})^2}{(e^{z}+e^{-z})^2}\\
+&= \frac{4}{(e^{z}+e^{-z})^2}\\
+&= \mathrm{sech}^2(z)\\
+&= 1-\tanh^2(z)
+\end{align*}
+
+**** ReLU (Rectified Linear Unit)
+
+***** Forward
+
+\begin{equation}
+\label{eq:2}
+\mathrm{relu}(z)= \max (0, z)
+\end{equation}
+
+***** Backward
+
+\begin{align*}
+\frac{\mathrm{d}}{\mathrm{d}z} \mathrm{relu}(z)=
+\begin{cases}
+1 & z > 0 \\
+0 & z < 0
+\end{cases}
+\end{align*}
+
+**** GELU (Gaussian Error Linear Unit)
+
+***** Forward
+
+\begin{equation}
+\label{eq:3}
+\mathrm{GELU}(z)=z\cdot \Phi(z),~\text{where}~\Phi(z)= \int_{-\infty}^{z} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}}~dx
+\end{equation}
+
+We can approximate the gaussian CDF using the numpy error function like this
+
+\begin{equation}
+\label{eq:4}
+\Phi(z)=\frac{1}{2}\left( 1+ \mathrm{erf}\left( \frac{z}{\sqrt{2}} \right) \right)
+\end{equation}
+
+to give us
+
+\begin{equation}
+\label{eq:5}
+\mathrm{GELU}(z)=\frac{z}{2}\left( 1+ \mathrm{erf}\left( \frac{z}{\sqrt{2}} \right) \right)
+\end{equation}
+
+*** Vector Activations
+
+\begin{equation}
+\label{eq:6}
+a_{ij}= \frac{\exp (z_{j})}{\sum_{k}^{C_{out}}\exp (z_{ik})}
+\end{equation}
